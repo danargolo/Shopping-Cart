@@ -119,16 +119,17 @@ const getProductInfo = async () => {
   createBtnListener();
 };
 
-const teste = getSavedCartItems();
-console.log(teste);
+const removeOnLoadList = () => {
+  const li = document.querySelectorAll('li');
+  li.forEach((l) => l.addEventListener('click', cartItemClickListener));  
+};
 
 const load = async () => {
-  const li = document.createElement('li');
   olCartItems.innerHTML = getSavedCartItems();
-  await li.addEventListener('click', cartItemClickListener);
 };
 
 window.onload = async () => {
   load();
   getProductInfo();
+  removeOnLoadList();
 };
