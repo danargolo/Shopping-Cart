@@ -3,6 +3,7 @@
 
 // Fique a vontade para modificar o código já escrito e criar suas próprias funções!
 const olCartItems = document.querySelector('.cart__items');
+const emptyBtn = document.querySelector('.empty-cart');
 
 const getProductResults = async () => {
   const data = await fetchProducts('computador');
@@ -121,15 +122,30 @@ const getProductInfo = async () => {
 
 const removeOnLoadList = () => {
   const li = document.querySelectorAll('li');
-  li.forEach((l) => l.addEventListener('click', cartItemClickListener));  
+  li.forEach((l) => {
+    console.log(l.innerText);
+    l.addEventListener('click', cartItemClickListener);  
+  });
 };
+
+// const removeOnLoadList = () => {
+//   const li = document.querySelectorAll('li');
+//   li.forEach((l) => l.addEventListener('click', cartItemClickListener));  
+// };
 
 const load = async () => {
   olCartItems.innerHTML = getSavedCartItems();
+};
+
+const emptyCart = () => {
+  emptyBtn.addEventListener('click', () => {
+    olCartItems.innerHTML = '';
+  });
 };
 
 window.onload = async () => {
   load();
   getProductInfo();
   removeOnLoadList();
+  emptyCart();
 };
