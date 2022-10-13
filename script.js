@@ -2,6 +2,7 @@
 // experimente passar o mouse sobre o nome das funções e verá que elas possuem descrições! 
 
 // Fique a vontade para modificar o código já escrito e criar suas próprias funções!
+const olCartItems = document.querySelector('.cart__items');
 
 const getProductResults = async () => {
   const data = await fetchProducts('computador');
@@ -69,8 +70,14 @@ const createProductItemElement = ({ id, title, thumbnail }) => {
  * @returns {Element} Elemento de um item do carrinho.
  */
 
-const cartItemClickListener = async (param) => {
-  await param.target.remove();
+const deleteLocalCart = () => {
+  localStorage.clear();
+};
+
+const cartItemClickListener = (param) => {
+  deleteLocalCart();
+  param.target.remove();
+  saveCartItems(olCartItems.innerHTML);
 };
 
 const createCartItemElement = ({ id, title, price }) => {
@@ -87,16 +94,20 @@ const getProductId = async (param) => {
 };
 
 const addToCart = async (param) => {
-  const cartItems = document.querySelector('.cart__items');
-  const productId = await getProductId(param.target);
+  const cartList = document.querySelector('.cart__items');
+  const productId = await getProductId(param);
   const { id, title, price } = await fetchItem(productId);
 
-  cartItems.append(await createCartItemElement({ id, title, price }));
+  cartList.append(createCartItemElement({ id, title, price }));
+  saveCartItems(olCartItems.innerHTML);
 };
 
 const createBtnListener = () => {
   const addButtons = document.querySelectorAll('.item__add');
-  addButtons.forEach((addButton) => addButton.addEventListener('click', addToCart));
+  addButtons.forEach((addButton) => addButton.addEventListener('click', (param) => {
+    deleteLocalCart();
+    addToCart(param.target);
+  }));
 };
 
 const getProductInfo = async () => {
@@ -108,6 +119,16 @@ const getProductInfo = async () => {
   createBtnListener();
 };
 
+const teste = getSavedCartItems();
+console.log(teste);
+
+const load = async () => {
+  const li = document.createElement('li');
+  olCartItems.innerHTML = getSavedCartItems();
+  await li.addEventListener('click', cartItemClickListener);
+};
+
 window.onload = async () => {
+  load();
   getProductInfo();
 };
