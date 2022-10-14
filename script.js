@@ -38,6 +38,11 @@ const cartItemClickListener = (param) => {
   saveCartItems(olCartItems.innerHTML);
 };
 
+const removeOnLoadCartList = () => {
+  const li = document.querySelectorAll('li');
+  li.forEach((l) => l.addEventListener('click', cartItemClickListener));
+};
+
 const createCartItemElement = ({ id, title, price }) => {
   const li = document.createElement('li');
   li.className = 'cart__item';
@@ -61,7 +66,7 @@ const addToCart = async (param) => {
 
 const createBtnListener = () => {
   const addButtons = document.querySelectorAll('.item__add');
-  addButtons.forEach((addButton) => addButton.addEventListener('click', (param) => {
+  addButtons.forEach((addBtn) => addBtn.addEventListener('click', (param) => {
     addToCart(param.target);
   }));
 };
@@ -75,11 +80,6 @@ const getProductInfo = async () => {
   createBtnListener();
 };
 
-const removeOnLoadCartList = () => {
-  const li = document.querySelectorAll('li');
-  li.forEach((l) => l.addEventListener('click', cartItemClickListener));
-};
-
 const emptyCart = () => {
   emptyBtn.addEventListener('click', () => {
     olCartItems.innerHTML = '';
@@ -91,32 +91,35 @@ const createPriceSpan = async () => {
   const span = document.createElement('span');
   span.className = 'total-price';
   cart.insertBefore(span, emptyBtn);
-  span.innerText = `Valor Total: R$ `;
+  span.innerText = 'Valor Total: R$ ';
 };
-
-const cartId = (param) => (param.innerText).split(' ').find((word) => word.includes('MLB'));
 
 const findCartPrice = async () => {
   let totalPrice = 0;
   const li = document.querySelectorAll('li');
-  for (const l of li) {
-    const item = await fetchItem(cartId(l)); 
-    totalPrice += item.price;
-  }
-
-  const span = document.querySelector('.total-price');
-  span.innerText = `Valor Total: R$ ${totalPrice}`;
+  li.forEach((l) => {
+    const price = (l.innerText).split(' ').find((priceString) => priceString.includes('$'));
+    totalPrice += ((Number(price.replace('$', ''))));
+  });
+  return totalPrice;
 };
 
-olCartItems.addEventListener('DOMSubtreeModified', findCartPrice);
+const elementListener = async () => {
+  createPriceSpan();
+  const span = document.querySelector('.total-price');
+  olCartItems.addEventListener('DOMSubtreeModified', async () => {
+    const price = await findCartPrice();
+    span.innerText = `Valor Total: R$ ${price}`;
+  });
+};
 
 const localStorageLoad = async () => {
-  olCartItems.innerHTML = getSavedCartItems()
+  olCartItems.innerHTML = getSavedCartItems();
 };
 
 window.onload = async () => {
+  elementListener();
   localStorageLoad();
-  createPriceSpan();
   getProductInfo();
   removeOnLoadCartList();
   emptyCart();  
