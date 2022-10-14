@@ -1,8 +1,5 @@
-// Esse tipo de comentário que estão antes de todas as funções são chamados de JSdoc,
-// experimente passar o mouse sobre o nome das funções e verá que elas possuem descrições! 
-
-// Fique a vontade para modificar o código já escrito e criar suas próprias funções!
 const olCartItems = document.querySelector('.cart__items');
+const cart = document.querySelector('.cart');
 const emptyBtn = document.querySelector('.empty-cart');
 
 const getProductResults = async () => {
@@ -10,11 +7,6 @@ const getProductResults = async () => {
   return data.results;
 };
 
-/**
- * Função responsável por criar e retornar o elemento de imagem do produto.
- * @param {string} imageSource - URL da imagem.
- * @returns {Element} Elemento de imagem do produto.
- */
 const createProductImageElement = (imageSource) => {
   const img = document.createElement('img');
   img.className = 'item__image';
@@ -22,13 +14,6 @@ const createProductImageElement = (imageSource) => {
   return img;
 };
 
-/**
- * Função responsável por criar e retornar qualquer elemento.
- * @param {string} element - Nome do elemento a ser criado.
- * @param {string} className - Classe do elemento.
- * @param {string} innerText - Texto do elemento.
- * @returns {Element} Elemento criado.
- */
 const createCustomElement = (element, className, innerText) => {
   const e = document.createElement(element);
   e.className = className;
@@ -36,14 +21,6 @@ const createCustomElement = (element, className, innerText) => {
   return e;
 };
 
-/**
- * Função responsável por criar e retornar o elemento do produto.
- * @param {Object} product - Objeto do produto. 
- * @param {string} product.id - ID do produto.
- * @param {string} product.title - Título do produto.
- * @param {string} product.thumbnail - URL da imagem do produto.
- * @returns {Element} Elemento de produto.
- */
 const createProductItemElement = ({ id, title, thumbnail }) => {
   const section = document.createElement('section');
   section.className = 'item';
@@ -55,28 +32,14 @@ const createProductItemElement = ({ id, title, thumbnail }) => {
   return section;
 };
 
-/**
- * Função que recupera o ID do produto passado como parâmetro.
- * @param {Element} product - Elemento do produto.
- * @returns {string} ID do produto.
- */
-// const getIdFromProductItem = (product) => product.querySelector('span.id').innerText;
-
-/**
- * Função responsável por criar e retornar um item do carrinho.
- * @param {Object} product - Objeto do produto.
- * @param {string} product.id - ID do produto.
- * @param {string} product.title - Título do produto.
- * @param {string} product.price - Preço do produto.
- * @returns {Element} Elemento de um item do carrinho.
- */
-
-const deleteLocalCart = () => {
-  localStorage.clear();
+const createPriceSpan = async () => {
+  const span = document.createElement('span');
+  span.className = 'total-price';
+  cart.insertBefore(span, emptyBtn);
 };
 
 const cartItemClickListener = (param) => {
-  deleteLocalCart();
+  localStorage.clear();
   param.target.remove();
   saveCartItems(olCartItems.innerHTML);
 };
@@ -106,7 +69,6 @@ const addToCart = async (param) => {
 const createBtnListener = () => {
   const addButtons = document.querySelectorAll('.item__add');
   addButtons.forEach((addButton) => addButton.addEventListener('click', (param) => {
-    deleteLocalCart();
     addToCart(param.target);
   }));
 };
@@ -120,32 +82,55 @@ const getProductInfo = async () => {
   createBtnListener();
 };
 
-const removeOnLoadList = () => {
+const removeOnLoadCartList = () => {
   const li = document.querySelectorAll('li');
-  li.forEach((l) => {
-    console.log(l.innerText);
-    l.addEventListener('click', cartItemClickListener);  
-  });
-};
-
-// const removeOnLoadList = () => {
-//   const li = document.querySelectorAll('li');
-//   li.forEach((l) => l.addEventListener('click', cartItemClickListener));  
-// };
-
-const load = async () => {
-  olCartItems.innerHTML = getSavedCartItems();
+  li.forEach((l) => l.addEventListener('click', cartItemClickListener));
 };
 
 const emptyCart = () => {
   emptyBtn.addEventListener('click', () => {
     olCartItems.innerHTML = '';
+    saveCartItems(olCartItems.innerHTML);
   });
 };
 
+// const cartId = () => {
+//   const li = document.querySelectorAll('li');
+//   const arr = [];
+//   for (const l of li) {
+//     const id = (l.innerText).split(' ').find((priceString) => priceString.includes('$'));
+//     arr.push(Number(id.replace('$', '')));
+//   }
+//   return console.log(arr);
+// }
+
+// const sumTotalPrice = async () => {
+//   const prices = cartId();
+//   const totalPrice = await prices.reduce((acc, num) => acc + num, 0);
+//   return console.log(totalPrice);
+// }
+
+const cartId = (param) => (param.innerText).split(' ').find((word) => word.includes('MLB'));
+
+
+const findCartPrice = async () => {
+  let totalPrice = 0;
+  const li = document.querySelectorAll('li');
+  for (const l of li) {
+    const item = await fetchItem(cartId(l)); 
+    totalPrice += item.price;
+  }
+
+  const span = document.querySelector('.total-price');
+  span.innerText = `Valor Total: R$ ${totalPrice}`;
+};
+
+olCartItems.addEventListener('DOMSubtreeModified', findCartPrice);
+
 window.onload = async () => {
-  load();
+  olCartItems.innerHTML = getSavedCartItems();
+  createPriceSpan();
   getProductInfo();
-  removeOnLoadList();
-  emptyCart();
+  removeOnLoadCartList();
+  emptyCart();  
 };
