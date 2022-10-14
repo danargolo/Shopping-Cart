@@ -32,12 +32,6 @@ const createProductItemElement = ({ id, title, thumbnail }) => {
   return section;
 };
 
-const createPriceSpan = async () => {
-  const span = document.createElement('span');
-  span.className = 'total-price';
-  cart.insertBefore(span, emptyBtn);
-};
-
 const cartItemClickListener = (param) => {
   localStorage.clear();
   param.target.remove();
@@ -61,7 +55,6 @@ const addToCart = async (param) => {
   const cartList = document.querySelector('.cart__items');
   const productId = await getProductId(param);
   const { id, title, price } = await fetchItem(productId);
-
   cartList.append(createCartItemElement({ id, title, price }));
   saveCartItems(olCartItems.innerHTML);
 };
@@ -94,24 +87,14 @@ const emptyCart = () => {
   });
 };
 
-// const cartId = () => {
-//   const li = document.querySelectorAll('li');
-//   const arr = [];
-//   for (const l of li) {
-//     const id = (l.innerText).split(' ').find((priceString) => priceString.includes('$'));
-//     arr.push(Number(id.replace('$', '')));
-//   }
-//   return console.log(arr);
-// }
-
-// const sumTotalPrice = async () => {
-//   const prices = cartId();
-//   const totalPrice = await prices.reduce((acc, num) => acc + num, 0);
-//   return console.log(totalPrice);
-// }
+const createPriceSpan = async () => {
+  const span = document.createElement('span');
+  span.className = 'total-price';
+  cart.insertBefore(span, emptyBtn);
+  span.innerText = `Valor Total: R$ `;
+};
 
 const cartId = (param) => (param.innerText).split(' ').find((word) => word.includes('MLB'));
-
 
 const findCartPrice = async () => {
   let totalPrice = 0;
@@ -127,8 +110,12 @@ const findCartPrice = async () => {
 
 olCartItems.addEventListener('DOMSubtreeModified', findCartPrice);
 
+const localStorageLoad = async () => {
+  olCartItems.innerHTML = getSavedCartItems()
+};
+
 window.onload = async () => {
-  olCartItems.innerHTML = getSavedCartItems();
+  localStorageLoad();
   createPriceSpan();
   getProductInfo();
   removeOnLoadCartList();
