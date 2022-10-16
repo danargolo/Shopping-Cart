@@ -2,6 +2,19 @@ const olCartItems = document.querySelector('.cart__items');
 const cart = document.querySelector('.cart');
 const emptyBtn = document.querySelector('.empty-cart');
 
+const loadingText = () => {
+  const items = document.querySelector('.items');
+  const loading = document.createElement('span');
+  loading.className = 'loading';
+  loading.innerText = 'carregando...';
+  items.appendChild(loading);
+};
+
+const removeLoading = () => {
+  const load = document.querySelector('.loading');
+  load.remove();
+};
+
 const getProductResults = async () => {
   const data = await fetchProducts('computador');
   return data.results;
@@ -71,13 +84,14 @@ const createBtnListener = () => {
   }));
 };
 
-const getProductInfo = async () => {
+const createProductList = async () => {
   const items = document.querySelector('.items');
   const products = await getProductResults();
   products.forEach(async ({ id, title, thumbnail }) => {
     items.append(createProductItemElement(({ id, title, thumbnail })));
   });
   createBtnListener();
+  removeLoading();
 };
 
 const emptyCart = () => {
@@ -117,10 +131,11 @@ const localStorageLoad = async () => {
   olCartItems.innerHTML = getSavedCartItems();
 };
 
-window.onload = async () => {
+window.onload = () => {
+  loadingText();
   elementListener();
   localStorageLoad();
-  getProductInfo();
+  createProductList();
   removeOnLoadCartList();
   emptyCart();  
 };
