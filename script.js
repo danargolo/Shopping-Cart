@@ -15,9 +15,9 @@ const removeLoading = () => {
   load.remove();
 };
 
-const createProductImageElement = (imageSource) => {
+const createProductImageElement = (imageSource, param) => {
   const img = document.createElement('img');
-  img.className = 'item__image';
+  img.className = param;
   img.src = imageSource;
   return img;
 };
@@ -34,7 +34,7 @@ const createProductItemElement = ({ id, title, thumbnail }) => {
   section.className = 'item';
   section.appendChild(createCustomElement('span', 'item_id', id));
   section.appendChild(createCustomElement('span', 'item__title', title));
-  section.appendChild(createProductImageElement(thumbnail));
+  section.appendChild(createProductImageElement(thumbnail, 'item__image'));
   section.appendChild(createCustomElement('button', 'item__add', 'Adicionar ao carrinho!'));
 
   return section;
@@ -42,28 +42,58 @@ const createProductItemElement = ({ id, title, thumbnail }) => {
 
 const cartItemClickListener = (param) => {
   localStorage.clear();
-  param.target.remove();
+  param.target.closest('li').remove();
   saveCartItems(elementCartList.innerHTML);
 };
 
 const removeOnLoadCartList = () => {
-  const li = document.querySelectorAll('li');
-  li.forEach((l) => l.addEventListener('click', (cartItemClickListener)));
+  const trashCan = document.querySelectorAll('.item__delete');
+  trashCan.forEach((trash) => trash.addEventListener('click', cartItemClickListener));
 };
 
-const createCartItemElement = ({ id, title, price }) => {
+
+const createNotVisibleId = (innerText) => {
+  const p = document.createElement('p');
+  p.className = 'cart_id';
+  p.style.display = 'none';
+  p.innerText = innerText;
+  return p;
+};
+
+const createDivThumbTittle = (thumbnail, title) => {
+  const div = document.createElement('div');
+  div.className = 'product_info';
+  div.append(createProductImageElement(thumbnail, 'image_cart'));
+  div.append(createCustomElement('p', 'cart_tittle', title));
+  return div;
+};
+
+const createDivPriceTrash = (price) => {
+  const div = document.createElement('div');
+  div.className = 'price_trash';
+  div.append(createCustomElement('span', 'cart_price', `Preço: R$ ${price}`));
+  const img = document.createElement('img');
+  img.addEventListener('click', cartItemClickListener);
+  div.append(img);
+  img.className = 'item__delete';
+  img.src = 'images/lixo.png';
+  return div;
+}
+
+const createCartItemElement = ({ id, title, price, thumbnail }) => {
   const li = document.createElement('li');
   li.className = 'cart__item';
-  li.innerText = `ID: ${id} | TITLE: ${title} | PRICE: $${price}`;
-  li.addEventListener('click', cartItemClickListener);
+  li.append(createNotVisibleId(id));
+  li.append(createDivThumbTittle(thumbnail,title));
+  li.append(createDivPriceTrash(price));
   return li;
 };
 
 const addToCart = async (param) => {
   const cartList = document.querySelector('.cart__items');
   const productId = param.target.parentNode.childNodes[0];
-  const { id, title, price } = await fetchItem(productId.innerText);
-  cartList.append(createCartItemElement({ id, title, price }));
+  const { id, title, price, thumbnail } = await fetchItem(productId.innerText);
+  cartList.append(createCartItemElement({ id, title, price, thumbnail }));
   saveCartItems(elementCartList.innerHTML);
 };
 
@@ -98,10 +128,10 @@ const createPriceSpan = async () => {
 
 const findCartPrice = async () => {
   let totalPrice = 0;
-  const li = document.querySelectorAll('li');
+  const li = document.querySelectorAll('.cart_price');
   li.forEach((l) => {
-    const price = (l.innerText).split(' ').find((priceString) => priceString.includes('$'));
-    totalPrice += ((Number(price.replace('$', ''))));
+    const price = (l.innerText).split(' ');
+    totalPrice += ((Number(price[2])));
   });
   return totalPrice;
 };
@@ -124,6 +154,6 @@ window.onload = () => {
   elementListener();
   localStorageLoad();
   createProductList();
+  emptyCart();
   removeOnLoadCartList();
-  emptyCart();  
 };
